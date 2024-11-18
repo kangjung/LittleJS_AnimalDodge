@@ -4,13 +4,18 @@ const ctx = mainContext;
 
 let gameRunning = false;
 let gameOver = false;
+let lastDirection = 'right';
 
 const character = {
-    x: canvas.width / 2 - 10,
-    y: canvas.height / 2 - 10,
-    width: 20,
-    height: 20,
+    x: canvas.width / 2 - 16,
+    y: canvas.height / 2 - 16,
+    width: 64,
+    height: 64,
     speed: 5,
+    animationFrame: 0,
+    animationDelay: 0,
+    animationSpeed: 5,
+    moving: false,
 };
 
 const obstacles = [];
@@ -26,6 +31,9 @@ document.onkeyup = (e) => {
     if (e.key === 'ArrowRight' || e.key === 'd') keyRight = false;
 };
 
+const squirrelSprite = new Image();
+squirrelSprite.src = './asset/run.png';
+
 // 장애물 생성
 function spawnObstacle() {
     const size = 20;
@@ -40,9 +48,17 @@ function spawnObstacle() {
 function gameLoop() {
     if (!gameRunning) return;
 
-    // 캐릭터 이동
-    if (keyLeft) character.x -= character.speed;
-    if (keyRight) character.x += character.speed;
+    character.moving = false;
+    if (keyLeft) {
+        character.x -= character.speed;
+        lastDirection = 'left';
+        character.moving = true;
+    }
+    if (keyRight) {
+        character.x += character.speed;
+        lastDirection = 'right';
+        character.moving = true;
+    }
     character.x = Math.max(0, Math.min(canvas.width - character.width, character.x));
 
     // 장애물 이동
@@ -72,8 +88,35 @@ function gameLoop() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = 'blue';
-    ctx.fillRect(character.x, character.y, character.width, character.height);
+    if (character.moving) {
+        character.animationDelay++;
+        if (character.animationDelay >= character.animationSpeed) {
+            character.animationFrame = (character.animationFrame + 1) % 4;
+            character.animationDelay = 0;
+        }
+    } else {
+        character.animationFrame = 0;
+    }
+
+    const spriteX = character.animationFrame * 32;
+    const spriteY = lastDirection === 0;
+    if (lastDirection === 'left') {
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.drawImage(
+            squirrelSprite,
+            spriteX, spriteY, 32, 32,
+            -character.x - character.width, character.y, character.width, character.height
+        );
+        ctx.restore();
+    } else {
+
+        ctx.drawImage(
+            squirrelSprite,
+            spriteX, spriteY, 32, 32,
+            character.x, character.y, character.width, character.height
+        );
+    }
 
     ctx.fillStyle = 'red';
     for (const obstacle of obstacles) {
@@ -110,8 +153,8 @@ function showGameOverScreen() {
 }
 
 function resetGame() {
-    character.x = canvas.width / 2 - 10; // 캐릭터 초기 위치
-    character.y = canvas.height / 2 - 10;
+    character.x = canvas.width / 2 - 32; // 캐릭터 초기 위치
+    character.y = canvas.height / 2 - 32;
     obstacles.length = 0;
     score = 0;
     gameRunning = false;
