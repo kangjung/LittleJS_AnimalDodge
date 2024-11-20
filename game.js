@@ -34,6 +34,32 @@ document.onkeyup = (e) => {
 const squirrelSprite = new Image();
 squirrelSprite.src = './asset/run.png';
 
+const treeSprite = new Image();
+treeSprite.src = './asset/tree.png';
+const tree = {
+    x: 0,
+    y: character.y + character.height - 64,
+    width: canvas.width,
+    height: 128,
+};
+function drawTree() {
+    const partWidth = 32;
+    const partHeight = 64;
+
+    ctx.drawImage(treeSprite, 0, 0, partWidth, partHeight, tree.x, tree.y, partWidth, tree.height);
+    let x = 0;
+    for (let i = partWidth; i < tree.width - partWidth; i += partWidth) {
+        if(treeSprite.width < x + 96){
+            x = partWidth;
+        } else {
+            x += partWidth;
+        }
+        ctx.drawImage(treeSprite, x, 0, partWidth, partHeight, i, tree.y, partWidth, tree.height);
+    }
+
+    ctx.drawImage(treeSprite, partWidth * 7, 0, partWidth, partHeight, tree.width - partWidth, tree.y, partWidth, tree.height);
+}
+
 // 장애물 생성
 function spawnObstacle() {
     const size = 20;
@@ -61,11 +87,9 @@ function gameLoop() {
     }
     character.x = Math.max(0, Math.min(canvas.width - character.width, character.x));
 
-    // 장애물 이동
     for (const obstacle of obstacles) {
         obstacle.y += obstacle.speed * obstacle.direction;
 
-        // 충돌 감지
         if (
             character.x < obstacle.x + obstacle.size &&
             character.x + character.width > obstacle.x &&
@@ -87,6 +111,8 @@ function gameLoop() {
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawTree();
 
     if (character.moving) {
         character.animationDelay++;
@@ -132,7 +158,7 @@ function gameLoop() {
 
 function showGameOverScreen() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = 'yellow';
     ctx.font = '24px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 3);
@@ -163,7 +189,7 @@ function resetGame() {
 
 function showStartScreen() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = 'yellow';
     ctx.font = '24px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('Welcome to Horizon Dodge!', canvas.width / 2, canvas.height / 3);
