@@ -60,7 +60,41 @@ function drawTree() {
     ctx.drawImage(treeSprite, partWidth * 7, 0, partWidth, partHeight, tree.width - partWidth, tree.y, partWidth, tree.height);
 }
 
-// 장애물 생성
+const backTreeSprite = new Image();
+backTreeSprite.src = './asset/btree.png';
+
+const backgroundTrees = [];
+const canvesWidth = canvas.width;
+const canvesHeight = canvas.height;
+const backgroundTreesX = [canvesWidth - 600,canvesWidth - 800,canvesWidth - 1200,canvesWidth - 1600,canvesWidth - 1800];
+const backgroundTreesY = [canvesHeight - 1250 ,canvesHeight - 1250,canvesHeight - 1250,canvesHeight - 1250,canvesHeight - 1250];
+const backgroundTreesScale = [3,3,3,3,3];
+const backgroundTreesOpacity = [1.5,1.5,1.5,1.5,1.5];
+const treeCount = 5;
+
+function initBackgroundTrees() {
+    for (let i = 0; i < treeCount; i++) {
+        backgroundTrees.push({
+            x: backgroundTreesX[i],
+            y: backgroundTreesY[i],
+            width: 256 * backgroundTreesScale[i],
+            height: 256 * backgroundTreesScale[i],
+            opacity: backgroundTreesOpacity[i],
+        });
+    }
+}
+
+// 나무 그리기
+function drawBackgroundTrees() {
+    for (const tree of backgroundTrees) {
+        ctx.globalAlpha = tree.opacity; // 투명도로 원근감 표현
+        ctx.drawImage(backTreeSprite, tree.x, tree.y, tree.width, tree.height);
+    }
+    ctx.globalAlpha = 1; // 투명도 초기화
+}
+initBackgroundTrees();
+
+
 function spawnObstacle() {
     const size = 20;
     const x = Math.random() * canvas.width;
@@ -111,7 +145,8 @@ function gameLoop() {
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+// 배경 나무 그리기
+    drawBackgroundTrees();
     drawTree();
 
     if (character.moving) {
