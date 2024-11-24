@@ -84,25 +84,47 @@ function initBackgroundTrees() {
     }
 }
 
-// 나무 그리기
 function drawBackgroundTrees() {
     for (const tree of backgroundTrees) {
-        ctx.globalAlpha = tree.opacity; // 투명도로 원근감 표현
+        ctx.globalAlpha = tree.opacity;
         ctx.drawImage(backTreeSprite, tree.x, tree.y, tree.width, tree.height);
     }
-    ctx.globalAlpha = 1; // 투명도 초기화
+    ctx.globalAlpha = 1;
 }
 initBackgroundTrees();
 
+const chestnutImage = new Image();
+chestnutImage.src = './asset/chestnut.png';
 
 function spawnObstacle() {
-    const size = 20;
+    const size = 40;
     const x = Math.random() * canvas.width;
     const startFromTop = Math.random() > 0.5;
     const y = startFromTop ? -size : canvas.height + size;
     const speed = 3 + Math.random() * 2;
     const direction = startFromTop ? 1 : -1;
     obstacles.push({ x, y, size, speed, direction });
+}
+function updateObstacles() {
+    for (const obstacle of obstacles) {
+        obstacle.y += obstacle.speed;
+        obstacle.angle += obstacle.rotationSpeed;
+
+        if (obstacle.y > canvas.height + obstacle.size || obstacle.y < -obstacle.size) {
+            obstacles.splice(obstacles.indexOf(obstacle), 1);
+            score++;
+        }
+    }
+}
+
+function drawObstacles() {
+    for (const obstacle of obstacles) {
+        ctx.save();
+        ctx.translate(obstacle.x + obstacle.size / 2, obstacle.y + obstacle.size / 2);
+        ctx.rotate(obstacle.angle);
+        ctx.drawImage(chestnutImage, -obstacle.size / 2, -obstacle.size / 2, obstacle.size, obstacle.size);
+        ctx.restore();
+    }
 }
 
 function gameLoop() {
@@ -145,7 +167,7 @@ function gameLoop() {
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-// 배경 나무 그리기
+
     drawBackgroundTrees();
     drawTree();
 
@@ -179,11 +201,8 @@ function gameLoop() {
         );
     }
 
-    ctx.fillStyle = 'red';
-    for (const obstacle of obstacles) {
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.size, obstacle.size);
-    }
-
+    updateObstacles();
+    drawObstacles();
     ctx.fillStyle = 'black';
     ctx.font = '18px Arial';
     ctx.fillText(`Score: ${score}`, 10, 20);
